@@ -1,0 +1,2 @@
+,Attack,Total,orig_image_detected,pertubed_image_detected,False Positive,Detection Rate
+0,fgsm,395,56,95,0.14177215189873418,0.24050632911392406
