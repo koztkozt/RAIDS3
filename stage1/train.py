@@ -25,7 +25,8 @@ matplotlib.use("Agg")
 if __name__ == "__main__":
     configfile = importlib.import_module(sys.argv[1])
     config = configfile.TrainConfig1()
-
+    dirparent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     ch = config.num_channels
     num_epoch = config.num_epoch
     batch_size = config.batch_size
@@ -36,8 +37,8 @@ if __name__ == "__main__":
     num_channels = config.num_channels
 
     print("Loading training data...")
-    X = np.load(data_path + "/X_train.npy")
-    Y = pd.read_csv(data_path + "/Y_train.csv")
+    X = np.load(dirparent + "/" + data_path + "X_train.npy")
+    Y = pd.read_csv(dirparent + "/" + data_path + "/Y_train.csv")
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=56)
 
     # print("Computing training set mean...")
@@ -75,11 +76,10 @@ if __name__ == "__main__":
             angle = angle.type(torch.FloatTensor)
             speed = speed.type(torch.FloatTensor)
             batch_x = batch_x.to(device)
-            angle = angle.to(device)
-            speed = speed.to(device)
             target = np.array([list(a) for a in zip(angle, speed)])
             target = torch.from_numpy(target)
-
+            target = target.to(device)
+            
             outputs = net(batch_x)
             loss = criterion(outputs, target)
             optimizer.zero_grad()
@@ -101,10 +101,9 @@ if __name__ == "__main__":
             angle = angle.type(torch.FloatTensor)
             speed = speed.type(torch.FloatTensor)
             batch_x = batch_x.to(device)
-            angle = angle.to(device)
-            speed = speed.to(device)
             target = np.array([list(a) for a in zip(angle, speed)])
             target = torch.from_numpy(target)
+            target = target.to(device)
 
             outputs = net(batch_x)
             loss = criterion(outputs, target)

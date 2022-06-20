@@ -27,6 +27,7 @@ if __name__ == "__main__":
     configfile = importlib.import_module(sys.argv[1])
     config = configfile.TrainConfig2()
     dirname = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dirparent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     ch = config.num_channels
     num_epoch = config.num_epoch
@@ -36,8 +37,8 @@ if __name__ == "__main__":
     target_model_path = os.path.join(dirname, "stage1/stage1_" + dataset_name + ".pt")
 
     print("Loading training data...")
-    X = np.load(data_path + "/X_train.npy")
-    Y = pd.read_csv(data_path + "/Y_train_attack_" + sys.argv[2] + ".csv")
+    X = np.load(dirparent + "/" + data_path + "X_train.npy")
+    Y = pd.read_csv(dirparent + "/" + data_path + "/Y_train_attack_" + sys.argv[2] + ".csv")
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=56)
 
     print("Creating model...")
@@ -49,11 +50,12 @@ if __name__ == "__main__":
     test_steps_per_epoch = int(len(test_dataset) / batch_size)
 
     # load stage1 model
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     stage1_model = stage1()
+    stage1_model = stage1_model.to(device)
     stage1_model.load_state_dict(torch.load(target_model_path))
     stage1_model.eval()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     net = stage2()
     net = net.to(device)
     summary(net, input_size=(batch_size, 2))
@@ -116,11 +118,10 @@ if __name__ == "__main__":
             speed = speed.type(torch.FloatTensor)
             target = target.type(torch.FloatTensor)
             batch_x = batch_x.to(device)
-            angle = angle.to(device)
-            speed = speed.to(device)
             target = target.to(device)
             angle_speed = np.array([list(a) for a in zip(angle, speed)])
             angle_speed = torch.from_numpy(angle_speed)
+            angle_speed = angle_speed.to(device)
 
             predicted_angle_speed = stage1_model(batch_x)
 
@@ -131,11 +132,11 @@ if __name__ == "__main__":
 
             running_vloss += loss.item()
 
-            pred = np.round(torch.sigmoid(output.detach()))
+            pred = np.round(torch.sigmoid(output.detach().cpu()))
             # print(pred.reshape(-1))
             # print(target)
             y_pred.extend(pred.reshape(-1))
-            y_true.extend(target.data)
+            y_true.extend(target.detach().cpu().data)
 
         avg_vloss = running_vloss / test_steps_per_epoch
         print("LOSS train {} valid {}".format(avg_loss, avg_vloss))
@@ -153,7 +154,6 @@ if __name__ == "__main__":
 
             # Initialize a blank dataframe and keep adding
             df = pd.DataFrame(columns=["TN", "FP", "FN", "TP", "Accuracy", "Precision", "Recall"])
-            print(type(cf_matrix))
             df.loc[epoch] = cf_matrix.tolist() + [accuracy, precision, recall]
             df["Total_Actual_Neg"] = df["TN"] + df["FP"]
             df["Total_Actual_Pos"] = df["FN"] + df["TP"]

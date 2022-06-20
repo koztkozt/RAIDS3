@@ -1,7 +1,7 @@
 # preprocess
 class DataConfig(object):
     dataset_name = "udacity"
-    data_path = "/home/ubuntu/RAIDS3/data/udacity/"
+    data_path = "data/udacity/"
     data_name = "hsv_gray_diff_ch2"  # hsv_gray_diff_ch4
     img_height = 100
     img_width = 100
@@ -12,7 +12,7 @@ class DataConfig(object):
 class TrainConfig1(DataConfig):
     model_path = "comma_large_dropout"
     batch_size = 32
-    num_epoch = 32
+    num_epoch = 10
     X_train_mean_path = "X_train_gray_diff2_mean.npy"
 
 
