@@ -30,7 +30,7 @@ class AdvGAN_Uni_Attack:
         model_name,
         #  model_num_labels,
         image_size,
-        # target,
+        target,
         image_nc,
         box_min,
         box_max,

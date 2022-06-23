@@ -36,9 +36,9 @@ class optiUConfig(DataConfig):
 
 # advGAN training
 class advGANConfig(DataConfig):
-    batch_size = 32
+    batch_size = 1
     num_epoch = 32
-    # target = 0.3
+    target = 10
 
 
 # attacks
